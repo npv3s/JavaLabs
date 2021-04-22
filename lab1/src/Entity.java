@@ -1,25 +1,17 @@
-import java.util.List;
-
 public class Entity {
     private static int idCounter = 1;
     protected final long id;
-    protected World world;
-    public String title;
+    protected String title;
     protected double posX;
     protected double posZ;
     protected boolean aggressive;
     protected int maxHealth;
     protected int health;
     protected int attackDamage;
-    protected Entity target;
 
-    public Entity() {
-        this.id = idCounter++;
-    }
-
-    public Entity(World world, String title, double posX, double posZ, boolean aggressive, int maxHealth, int health, int attackDamage) {
-        this.id = idCounter++;
-        this.world = world;
+    public Entity(String title, double posX, double posZ, boolean aggressive, int maxHealth, int health, int attackDamage) {
+        this.id = idCounter;
+        idCounter++;
         this.title = title;
         this.posX = posX;
         this.posZ = posZ;
@@ -27,21 +19,30 @@ public class Entity {
         this.maxHealth = maxHealth;
         this.health = health;
         this.attackDamage = attackDamage;
-        this.target = null;
     }
 
     public void update() {
-        if (aggressive && health >= 0) {
-            searchTarget();
-            if (target != null) {
-                double x = this.posX - target.posX;
-                double z = this.posZ - target.posZ;
-                double distance = target.distanceTo(this.posX, this.posZ);
-                if (distance < 2) {
-                    this.attack(target);
-                    if (target.getHealth() <= 0)
-                        target = null;
-                } else {
+        if (aggressive) {
+            double min = Double.MAX_VALUE;
+            double x = 0, z = 0;
+            Entity closest = null;
+            for (Entity e : GameServer.getInstance().entities) {
+                if (e != null) {
+                    if (!e.equals(this) && !(e.isAggressive())) {
+                        x = posX - e.posX;
+                        z = posZ - e.posZ;
+                        double distance = Math.sqrt(Math.pow(Math.abs(x), 2) + Math.pow(Math.abs(z), 2));
+                        if (distance < min) {
+                            min = distance;
+                            closest = e;
+                        }
+                    }
+                }
+            }
+            if (closest != null) {
+                if (min < 2)
+                    this.attack(closest);
+                else if (min < 20) {
                     if (z > 1.0)
                         posZ--;
                     else if (z < -1.0)
@@ -55,32 +56,15 @@ public class Entity {
         }
     }
 
-    public void searchTarget() {
-        if (target == null) {
-            List<Entity> closestEntities = world.getEntitiesNearEntity(this, 20);
-            if (!closestEntities.isEmpty()) {
-                Entity target = closestEntities.get(0);
-                if (this.equals(target))
-                    if (closestEntities.size() >= 2)
-                        target = closestEntities.get(1);
-                    else
-                        return;
-                double distance = target.distanceTo(posX, posZ);
-                if (distance < 20)
-                    this.target = target;
-            }
-        }
-    }
-
     public void attack(Entity entity) {
         int health = entity.getHealth();
-        if (health <= 0) return;
-        health -= this.attackDamage + 0.5 * GameServer.getInstance().getConfig().difficulty;
-        entity.setHealth(health);
+        health -= this.attackDamage + 0.5 * GameServer.getInstance().difficulty;
         if (health > 0) {
+            entity.setHealth(health);
             if (entity instanceof EntityPlayer)
                 entity.attack(this);
         } else {
+
             String killer = this.getTitle();
             if (this instanceof EntityPlayer)
                 killer = ((EntityPlayer) this).getNickname();
@@ -90,7 +74,15 @@ public class Entity {
                 killed = ((EntityPlayer) entity).getNickname();
 
             System.out.println(killer + " убил " + killed);
-            // world.entities.remove(entity);
+            Entity[] entities = GameServer.getInstance().entities;
+            for (int i = 0; i < entities.length; i++) {
+                if (entities[i] != null) {
+                    if (entities[i].equals(entity)) {
+                        entities[i] = null;
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -106,12 +98,6 @@ public class Entity {
                 ", health=" + health +
                 ", attackDamage=" + attackDamage +
                 '}';
-    }
-
-    public double distanceTo(double x, double z) {
-        x -= this.posX;
-        z -= this.posZ;
-        return Math.sqrt(Math.pow(Math.abs(x), 2) + Math.pow(Math.abs(z), 2));
     }
 
     public long getId() {

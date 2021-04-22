@@ -3,12 +3,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class World {
-    protected int id;
-    public String worldName;
-    protected List<Entity> entities;
-
-    public World() {
-    }
+    int id;
+    String worldName;
+    List<Entity> entities;
 
     public World(int id, String worldName) {
         this.id = id;
@@ -23,11 +20,6 @@ public class World {
     public void update() {
         for (Entity entity : entities) {
             entity.update();
-        }
-        for (int i = entities.size() - 1; i >= 0; i--) {
-            if (entities.get(i).getHealth() <= 0) {
-                entities.remove(i);
-            }
         }
     }
 
@@ -61,7 +53,7 @@ public class World {
     }
 
     public List<Entity> getEntitiesNearEntity(Entity entity, double range) {
-        return this.getEntitiesInRegion((int) entity.posX, (int) entity.posZ, range);
+        return this.getEntitiesInRegion((int)entity.posX, (int)entity.posZ, range);
     }
 
     @Override

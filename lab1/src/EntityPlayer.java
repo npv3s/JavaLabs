@@ -1,18 +1,14 @@
 public class EntityPlayer extends Entity {
-    public String nickname;
+    private String nickname;
 
-    public EntityPlayer() {
-        super();
-    }
-
-    public EntityPlayer(World world, String nickname, double posX, double posZ, int maxHealth, int health, int attackDamage) {
-        super(world, "Player", posX, posZ, false, maxHealth, health, attackDamage);
+    public EntityPlayer(String nickname, double posX, double posZ, int maxHealth, int health, int attackDamage) {
+        super("Player", posX, posZ, false, maxHealth, health, attackDamage);
         this.nickname = nickname;
     }
 
     public void update() {
         super.update();
-        if ((health < maxHealth) & (GameServer.getInstance().getServerTicks() % 2 == 0)) {
+        if ((health < maxHealth) & (GameServer.getInstance().getUpdate() % 2 == 0)) {
             health++;
         }
     }

@@ -4,7 +4,7 @@ public class Entity {
     private static int idCounter = 1;
     protected final long id;
     protected World world;
-    public String title;
+    protected String title;
     protected double posX;
     protected double posZ;
     protected boolean aggressive;
@@ -12,10 +12,6 @@ public class Entity {
     protected int health;
     protected int attackDamage;
     protected Entity target;
-
-    public Entity() {
-        this.id = idCounter++;
-    }
 
     public Entity(World world, String title, double posX, double posZ, boolean aggressive, int maxHealth, int health, int attackDamage) {
         this.id = idCounter++;
@@ -31,7 +27,7 @@ public class Entity {
     }
 
     public void update() {
-        if (aggressive && health >= 0) {
+        if (aggressive) {
             searchTarget();
             if (target != null) {
                 double x = this.posX - target.posX;
@@ -74,10 +70,9 @@ public class Entity {
 
     public void attack(Entity entity) {
         int health = entity.getHealth();
-        if (health <= 0) return;
-        health -= this.attackDamage + 0.5 * GameServer.getInstance().getConfig().difficulty;
-        entity.setHealth(health);
+        health -= this.attackDamage + 0.5 * GameServer.getInstance().difficulty;
         if (health > 0) {
+            entity.setHealth(health);
             if (entity instanceof EntityPlayer)
                 entity.attack(this);
         } else {
@@ -90,7 +85,7 @@ public class Entity {
                 killed = ((EntityPlayer) entity).getNickname();
 
             System.out.println(killer + " убил " + killed);
-            // world.entities.remove(entity);
+            world.entities.remove(entity);
         }
     }
 

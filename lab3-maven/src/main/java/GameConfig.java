@@ -15,4 +15,15 @@ public class GameConfig {
         this.updatePeriod = updatePeriod;
         this.savePeriod = savePeriod;
     }
+
+    @Override
+    public String toString() {
+        return "GameConfig{" +
+                "ip='" + ip + '\'' +
+                ", port=" + port +
+                ", difficulty=" + difficulty +
+                ", updatePeriod=" + updatePeriod +
+                ", savePeriod=" + savePeriod +
+                '}';
+    }
 }

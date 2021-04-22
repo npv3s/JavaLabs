@@ -1,9 +1,5 @@
 public class EntityPlayer extends Entity {
-    public String nickname;
-
-    public EntityPlayer() {
-        super();
-    }
+    private String nickname;
 
     public EntityPlayer(World world, String nickname, double posX, double posZ, int maxHealth, int health, int attackDamage) {
         super(world, "Player", posX, posZ, false, maxHealth, health, attackDamage);

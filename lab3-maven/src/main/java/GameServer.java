@@ -3,7 +3,7 @@ import java.io.IOException;
 
 public class GameServer {
     protected static GameServer instance;
-    public World serverWorld;
+    protected World serverWorld;
     protected GameConfig config;
     protected int serverTicks;
 
@@ -12,9 +12,13 @@ public class GameServer {
 
         FileUtils.init();
 
-        GameConfig conf = new GameConfig();
+        config = new GameConfig();
 
-        FileUtils.saveConfig(new File("conf.json"), conf);
+        FileUtils.saveConfig(new File("conf.json"), config);
+
+        config = FileUtils.loadConfig(new File("conf.json"));
+
+        System.out.println(config);
 
         try {
             this.config = FileUtils.loadConfig(new File("conf.json"));
@@ -24,20 +28,26 @@ public class GameServer {
         this.serverTicks = 0;
         this.serverWorld = new World(1, "Earth");
 
-        for (int i = 0; i < 100000; i++) {
-            serverWorld.addEntity(new Entity(serverWorld, "Zombie", i, i, true, 100, 100, 10));
-        }
+        serverWorld.addEntity(new Entity(serverWorld, "Zombie", 11, 18, true, 100, 100, 10));
         serverWorld.addEntity(new EntityPlayer(serverWorld, "Ra4ok", 11, 12, 100, 100, 15));
 
         FileUtils.saveWorld(new File("world.bin"), serverWorld);
 
-        //System.out.println(serverWorld);
+        serverWorld = FileUtils.loadWorld(new File("world.bin"));
 
-        for (int i = 0; i < 0; i++) {
+        System.out.println(serverWorld);
+
+        int saveCounter = 0;
+        for (int i = 0; i < 30; i++) {
             this.updateServer();
             serverTicks++;
+            saveCounter++;
+            if (saveCounter == config.savePeriod) {
+                FileUtils.saveWorld(new File("world.bin"), serverWorld);
+                saveCounter = 0;
+            }
             try {
-                Thread.sleep(100);
+                Thread.sleep(config.updatePeriod);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 break;

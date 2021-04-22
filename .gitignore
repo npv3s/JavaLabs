@@ -1,7 +1,10 @@
-*.gradle
+*gradle*
 *.idea
 *.yaml
 *.html
 *.iml
 *build
 *out
+*.docx
+*.class
+*.zip

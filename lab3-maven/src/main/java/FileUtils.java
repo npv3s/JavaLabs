@@ -1,19 +1,25 @@
 import com.google.gson.*;
-import org.nustaq.serialization.FSTConfiguration;
 
-import java.io.File;
-import java.io.IOException;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
+import java.io.*;
 import java.nio.file.Files;
+import java.util.LinkedList;
 
 public class FileUtils {
     static Gson gson;
-
-    static FSTConfiguration FSTConfig() {
-        return FSTConfiguration.createUnsafeBinaryConfiguration();
-    }
+    static Kryo kryo;
 
     public static void init() {
         gson = new GsonBuilder().setPrettyPrinting().create();
+        kryo = new Kryo();
+        kryo.register(World.class);
+        kryo.register(LinkedList.class);
+        kryo.register(Entity.class);
+        kryo.register(EntityPlayer.class);
+        kryo.setReferences(true);
     }
 
     public static void saveConfig(File path, GameConfig config) throws IOException {
@@ -25,10 +31,15 @@ public class FileUtils {
     }
 
     public static void saveWorld(File path, World world) throws IOException {
-        Files.write(path.toPath(), FSTConfig().asByteArray(world));
+        Output output = new Output(new FileOutputStream(path));
+        kryo.writeObject(output, world);
+        output.close();
     }
 
     public static World loadWorld(File path) throws IOException {
-        return (World) FSTConfig().asObject(Files.readAllBytes(path.toPath()));
+        Input input = new Input(new FileInputStream(path));
+        World world = kryo.readObject(input, World.class);
+        input.close();
+        return world;
     }
 }
